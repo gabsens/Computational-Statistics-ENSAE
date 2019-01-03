@@ -1,0 +1,160 @@
+%%% Template originaly created by Karol Kozioł (mail@karol-koziol.net) and modified for ShareLaTeX use
+%%% lionel.rou.durand@ensae.fr
+\documentclass[a4paper,11pt]{article}
+
+\usepackage{listings}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,textcomp}
+\usepackage[utf8]{inputenc}  
+\usepackage[T1]{fontenc}  
+\usepackage{ listings }
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{bbm}
+\graphicspath{ {images/} }
+
+\usepackage{geometry}
+\geometry{total={210mm,297mm},
+left=15mm,right=15mm,%
+bindingoffset=0mm, top=20mm,bottom=20mm}
+
+\usepackage{etoolbox}
+\makeatletter
+\preto{\@verbatim}{\topsep=0pt \partopsep=3pt }
+\makeatother
+
+\linespread{1}
+
+\newcommand{\linia}{\rule{\linewidth}{0.5pt}}
+
+
+% my own titles
+\makeatletter
+\renewcommand{\maketitle}{
+\begin{center}
+\vspace{2ex}
+{\huge \textsc{\@title}}
+\vspace{1ex}
+\\
+\linia\\
+\@author 
+\vspace{4ex}
+\end{center}
+}
+\makeatother
+%%%
+
+% custom footers and headers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\lhead{}
+\chead{}
+\rhead{}
+
+\cfoot{}
+\rfoot{Page \thepage}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+%
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+%%%----------%%%----------%%%----------%%%----------%%%
+
+\begin{document}
+
+\title{HW1}
+
+\author{Gabriel ROMON}
+
+
+
+\maketitle
+
+\section*{Problem 1.22}
+
+\begin{enumerate}[label=(\alph*)]
+  \item The Bayes risk is defined as $\displaystyle \int \int L(\delta(x),\theta)f(x|\theta)\pi(\theta)dx d\theta$. Letting $m(x)=\int f(x|\theta)\pi(\theta)d\theta$ be the marginal density of $X$, Bayes risk can be rewritten as $\displaystyle \int \int L(\delta(x),\theta)\pi(\theta|x)m(x)dx d\theta$. Since the integrand is non-negative, Tonelli's theorem allows to switch the order of integration:
+  $$\begin{aligned}\int \int L(\delta(x),\theta)\pi(\theta|x)m(x)dx d\theta &= \int \int L(\delta(x),\theta)\pi(\theta|x)m(x)d\theta dx\\ 
+  &= \int m(x) \underbrace{\int L(\delta(x),\theta)\pi(\theta|x) d\theta}_{\text{posterior loss}} dx \end{aligned}$$
+  Since $m$ is independent of $\delta$, $\displaystyle\int m(x) \int L(\delta(x),\theta)\pi(\theta|x) d\theta dx$ is minimized in $\delta$ only if for each $x$, $\delta(x)$ minimizes $\displaystyle\int L(\delta(x),\theta)\pi(\theta|x) d\theta$.
+
+  \item I assume that the norm in the statement of the problem refers to the euclidean norm in $\mathbb R^n$. Let $x$ be fixed and let us look for $\displaystyle \delta^{\pi}(x)\in \argmin_{c\in \mathbb R^n} \int \|h(\theta)-c\|^2\pi(\theta|x)d\theta$. Let $\gamma$ be a random variable with probability density $\pi(\cdot|x)$ (that is to say $\gamma$ follows the posterior distribution). Then 
+  $$\begin{aligned}
+    \int \|h(\theta)-c\|^2\pi(\theta|x)d\theta &= E(\|h(\gamma)-c\|^2)\\
+    &= \begin{aligned}[t] &E(\|h(\gamma)-E(h(\gamma))\|^2) + E(\|c-E(h(\gamma))\|^2) \\ &+ 2E[(h(\gamma)-E(h(\gamma))^T(c-E(h(\gamma)))] \end{aligned}\\
+    &= E(\|h(\gamma)-E(h(\gamma))\|^2) + E(\|c-E(h(\gamma))\|^2)
+  \end{aligned}$$
+  which is clearly minimal for $c=E(h(\gamma))$. Hence $\delta^{\pi}(x) = E(h(\gamma))$, which may be rewritten with other notations as $E^{\pi}(h(\theta)|x)$.
+
+  \item Let $x$ be fixed and let us look for $\displaystyle \delta^{\pi}(x)\in \argmin_{c\in \mathbb R} \int |h(\theta)-c|\pi(\theta|x)d\theta$. With the same notation as in b), $\displaystyle \int |h(\theta)-c|\pi(\theta|x)d\theta = E(|h(\gamma)-c|)$. We recall that a median of $h(\gamma)$ is any $m$ such that $P(h(\gamma)\leq m)\leq \frac 12$ and $P(h(\gamma)\geq m)\leq \frac 12$. By replacing $h(\gamma)$ with $h(\gamma)-m$ we may assume without loss of generality that $m=0$. We only need to prove that $E(|h(\gamma)-c|) \geq E(|h(\gamma)|)$. 
+
+  Assume first that $c\geq 0$, and note that $\mathbbm 1_{h(\gamma)\leq 0}(|h(\gamma)-c|-|h(\gamma)|) = \mathbbm 1_{h(\gamma)\leq 0} (-(h(\gamma)-c)+h(\gamma)) = c$, which yields $$E(\mathbbm 1_{h(\gamma)\leq 0} [|h(\gamma)-c|-|h(\gamma)|]) = cP(h(\gamma)\leq 0)$$
+  By the reverse triangle inequality, $|h(\gamma)-c|\geq |h(\gamma)|-|c| = |h(\gamma)|-c$, thus $$|h(\gamma)-c| - |h(\gamma)| \geq -c$$
+  hence $$E(\mathbbm 1_{h(\gamma)>0} [|h(\gamma)-c|-|h(\gamma)|]) \geq -cP(h(\gamma)> 0)$$
+  Summing both inequalities, $$E(|h(\gamma)-c|-|h(\gamma)|)\geq c(P(h(\gamma)\leq 0)-P(h(\gamma)> 0)) = c(2P(h(\gamma)\leq 0)-1)\geq 0$$ since $0$ is a median of $h(\gamma)$.
+
+  If $c\leq 0$, simply re-use the previous case by noting that $$E(|h(\gamma)-c|) = E(|-h(\gamma)+c|)=E(|-h(\gamma)-(-c)|)\geq E(|-h(\gamma)|) = E(|h(\gamma)|)$$
+
+  Therefore $\delta^{\pi}(x) = \operatorname{med} h(\gamma)$ where $\operatorname{med} h(\gamma)$ is any median of $h(\gamma)$ and $\gamma$ follows the posterior distribution.
+\end{enumerate}
+
+\section*{Problem 2.30}
+\begin{enumerate}[label=(\alph*)]
+  \item Using the law of the unconscious statistician and the fact that $X$ and $U$ are independent, $$\begin{aligned}
+    P(U<\frac{f(X)}{Mg(X)}) &= E(\mathbbm 1_{U<\frac{f(X)}{Mg(X)}}) = \int \int  \mathbbm 1_{u<\frac{f(x)}{Mg(x)}} \mathbbm 1_{(0,1)}(u) g(x) du dx \\
+    &= \int g(x) \int_0^{\min(\frac{f(x)}{Mg(x)},1)}du dx = \int g(x) \int_0^{\frac{f(x)}{Mg(x)}}du dx \quad \text{because } f\leq Mg\\
+    &= \int g(x)\frac{f(x)}{Mg(x)} dx = \frac 1M
+  \end{aligned} $$
+  \item Since $f$ and $g$ are normalized densities, integrating $f\leq M g$ yields $1\leq M$.
+  \item The statement of the problem requires clarification. $N$ is meant to be the number of \textbf{failed} trials until the $k$-th success. Let us consider $U_1,X_1,\ldots, U_{n+k},X_{n+k}$ $n+k$ independent random variables. For $n\geq \mathbb N$, $$\begin{aligned}
+   P(N=n) &= P\left(U_{n+k}\leq \frac{f(X_{n+k})}{Mg(X_{n+k})}\bigcap \sum_{i=1}^{n+k-1} \mathbbm 1_{U_i<\frac{f(X_i)}{Mg(X_i)}} = k-1\right) \\
+   &= P\left(U_{n+k}\leq \frac{f(X_{n+k})}{Mg(X_{n+k})}\right) P\bigg(\underbrace{\sum_{i=1}^{n+k-1} \mathbbm 1_{U_i<\frac{f(X_i)}{Mg(X_i)}}}_{\sim \mathcal B(n+k-1,\frac 1M)} = k-1\bigg) \\
+   &= \frac 1M \binom{n+k-1}{k-1}\frac{1}{M^{k-1}}\left(1-\frac 1M \right)^n\\
+   &= \binom{n+k-1}{n} \frac{1}{M^{k}}\left(1-\frac 1M \right)^n
+  \end{aligned}$$
+  Hence $N\sim \mathcal{N}eg(k,\frac 1M)$. Thus $\displaystyle E(N) = \frac{k (1-\frac 1M)}{\frac 1M} = k(M-1)$. The average total number of trials needed until $k$ successes have occurred is the sum of the average number of failures and the $k$ successes: $E(N)+k = kM$.
+  \item If $A$ verifies $f\leq Ag$, then $f\leq 2Ag$. To see that the bound is not tight, let $M=2A$ and $M'=A$.
+
+  Consider for the target distribution $f$ a $\operatorname{Gamma}(a,b)$ where $a\notin \mathbb N$. For the proposal distribution $g$, consider a $\operatorname{Gamma}(\lfloor a \rfloor,\beta)$ where $\beta$ must be chosen so that the domination condition holds. Note that $$\forall x>0,\;\frac{f(x)}{g(x)}=\frac{\Gamma(\lfloor a \rfloor)}{\Gamma(a)}\frac{b^a}{\beta^{\lfloor a \rfloor}}x^{a-\lfloor a \rfloor}e^{-(b-\beta)x}$$ the derivative of which is $\geq 0$ if and only if $x\leq \dfrac{a-\lfloor a \rfloor}{b-\beta}$, provided $b-\beta >0$. Therefore, when $\beta<b$, $\frac fg$ has a maximum at $x=\frac{a-\lfloor a \rfloor}{b-\beta}$. We may now consider the choice of $\beta$ that yields the tightest bound. At $\dfrac{a-\lfloor a \rfloor}{b-\beta}$, the function is proportional to $\dfrac{1}{\beta^{\lfloor a \rfloor}(b-\beta)^{a-\lfloor a \rfloor}}$, thus we must maximize $\beta^{\lfloor a \rfloor}(b-\beta)^{a-\lfloor a \rfloor}$. A quick study of the derivative yields the optimal $\beta$ as $\dfrac{\lfloor a \rfloor}{a}b$, and plugging this back into the upper bound yields the optimal bound $$M':= \frac{\Gamma(\lfloor a \rfloor)}{\Gamma(a)} \left(\frac ae\right)^a \left(\frac e{\lfloor a \rfloor}\right)^{\lfloor a \rfloor}$$
+  However, this bound may be not computationally tractable as it requires computing special functions. For $a>1.47$, $\frac{\Gamma(\lfloor a \rfloor)}{\Gamma(a)}\leq 1$, which yields the simpler upper bound $$M:= \left(\frac ae\right)^a \left(\frac e{\lfloor a \rfloor}\right)^{\lfloor a \rfloor}$$
+  
+  Note that the computations above \textbf{also solve questions c) and d) in in Problem 2.32}.
+
+  \item Let $B$ be a measurable set and note that $$\begin{aligned}
+    P(X\in B| U\leq \frac{f(X)}{Mg(X)}) &= \frac{P(X\in B \cap U\leq \frac{f(X)}{Mg(X)})}{P(U\leq \frac{f(X)}{Mg(X)})} = \frac{\int\int \mathbbm 1_{x\in B} \mathbbm 1_{u\leq \frac{f(x)}{Mg(x)}}\mathbbm 1_{(0,1)}(u)g(x) du dx}{\int \int \mathbbm 1_{u\leq \frac{f(x)}{Mg(x)}}\mathbbm 1_{(0,1)}(u)g(x)dudx}\\
+    &= \frac{\int_B g(x)\int_0^{\min(\frac{f(x)}{Mg(x)},1)} du dx}{\int g(x)\int_0^{\min(\frac{f(x)}{Mg(x)},1)} du dx}
+  \end{aligned}$$
+  With $A=\{x, f(x)>Mg(x)\}$, $$\begin{aligned}
+    P(X\in B| U\leq \frac{f(X)}{Mg(X)}) &= \frac{\int_B g(x)\int_0^{\min(\frac{f(x)}{Mg(x)},1)} du dx}{\int g(x)\int_0^{\min(\frac{f(x)}{Mg(x)},1)} du dx} \\ &= \frac{\int_B \mathbbm 1_{A^c}(x) g(x)\int_0^{\frac{f(x)}{Mg(x)}} du dx + \int_B \mathbbm 1_{A}(x) g(x)\int_0^{1} du dx}{\int \mathbbm 1_{A^c}(x) g(x)  \int_0^{\frac{f(x)}{Mg(x)}} du dx + \int \mathbbm 1_{A}(x) g(x)\int_0^{1} du dx} \\
+    &= \frac{\int_B \mathbbm 1_{A^c}(x) \frac{f(x)}M dx + \int_B \mathbbm 1_{A}(x) g(x)dx}{\int \mathbbm 1_{A^c}(x) \frac{f(x)}M dx + \int \mathbbm 1_{A}(x) g(x)dx}\\ &= \int_B \frac 1C  \left(\mathbbm 1_{A^c}(x) f(x) + \mathbbm 1_{A}(x) Mg(x)\right) dx
+    \end{aligned}$$
+    Hence $Y$ has density $\frac 1C  \left(\mathbbm 1_{A^c}(y) f(y) + \mathbbm 1_{A}(y) Mg(y)\right)$ where $C=\int \mathbbm 1_{A^c}(x) f(x) + \mathbbm 1_{A}(x) Mg(x)dx$. By the definition of $A$, this rewrites as $\frac 1C \min(f(y), Mg(y))$ which is different from $f(y)$ in general. Therefore, when the bound is too tight, the algorithm does not sample according to $f$.
+
+    \item Suppose that $\forall x, f(x)\leq M' g(x) < M g(x)$. Let us determine the distribution of $X|U>\frac{f(X)}{Mg(X)}$. Let $B$ be a measurable set. $$\begin{aligned}
+      P(X\in B|U>\frac{f(X)}{Mg(X)}) &= \frac{\int \int \mathbbm 1_{x\in B} \mathbbm 1_{u>\frac{f(x)}{Mg(x)}} \mathbbm 1_{(0,1)}(u) g(x) du dx}{\int \int \mathbbm 1_{u>\frac{f(x)}{Mg(x)}} \mathbbm 1_{(0,1)}(u) g(x) du dx}\\
+      &= \frac{\int \int \mathbbm 1_{x\in B} g(x)\int_{\frac{f(x)}{Mg(x)}}^1 du dx}{\int \int g(x)\int_{\frac{f(x)}{Mg(x)}}^1 du dx}\\
+      &= \frac{\int_B g(x)-\frac 1M f(x) dx}{1-\frac 1M}
+    \end{aligned}$$
+    Let $Z$ be the random variable that samples failed trials. Considering the previous computations, $Z$ has density $\dfrac{g(z)-\frac 1M f(z)}{1-\frac 1M}$. This density may be used as a proposal distribution since $$\frac{f(z)}{\frac{g(z)-\frac 1M f(z)}{1-\frac 1M}} \leq \frac{f(z)}{\frac{\frac{1}{M'}f(z)-\frac 1M f(z)}{1-\frac 1M}} = \frac{M-1}{\frac{M}{M'}-1}$$
+\end{enumerate}
+
+\section*{Problem 3.22}
+
+\begin{enumerate}[label=(\alph*)]
+  \item The expectation of the sum of the weights is $\displaystyle E\left(\sum_{j=1}^n\frac{f(X_j)}{g(X_j)}\right) = \sum_{j=1}^nE\left(\frac{f(X_j)}{g(X_j)}\right)$. Since the $X_j$ are sampled according to $g$, $\displaystyle E\left(\frac{f(X_j)}{g(X_j)}\right) = \int g(x) \frac{f(x)}{g(x)}dx = 1$. Hence $\displaystyle E\left(\sum_{j=1}^n\frac{f(X_j)}{g(X_j)}\right) =n$.
+
+  However, there is no reason for $\sum_{j=1}^n\frac{f(X_j)}{g(X_j)} = n$ to hold in general. If the weights are to be used for resampling, one must normalize them properly as $\frac{w_i}{\sum_{i=1}^n w_i}$.
+
+  \item We assume that the weights have been normalized to sum to $1$. For each $j$, $\tilde X_j$ is defined by its conditional distribution: $\tilde X_j|X_1,\ldots,X_n \sim \sum_{i=1}^n w_i \delta_{X_i}$. Thus $$\begin{aligned}
+    E(h(\tilde X_j)) = E(E(h(\tilde X_j)|X_1,\ldots, X_n)) = E(\sum_{i=1}^n w_ih(X_i))
+  \end{aligned}$$
+  Hence $$ E\left(\frac 1n \sum_{j=1}^n h(\tilde X_j)\right) = E\left(\sum_{i=1}^n w_ih(X_i)\right)$$
+
+  \item If the formula holds with $w_i = \frac 1n\frac{f(X_i)}{g(X_i)}$, then $$E\left(\frac 1n \sum_{j=1}^n h(\tilde X_j)\right) =E\left(\sum_{i=1}^n \frac 1n \frac{f(X_i)}{g(X_i)} h(X_i)\right) =n\cdot\frac 1n \int g(x) \frac{f(x)}{g(x)}h(x)dx = \int h(x)f(x)dx$$
+  With $h:x \mapsto \mathbbm 1_{x\leq t}$, one gets $$E\left(\frac 1n \sum_{j=1}^n \mathbbm 1_{\tilde X_j\leq t}\right)  = \int_{-\infty}^t f(x)dx$$
+  Therefore, the cumulative distribution of the $\tilde X_j$ is unbiased.
+\end{enumerate}
+
+\end{document}
