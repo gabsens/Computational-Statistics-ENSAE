@@ -252,7 +252,9 @@ We will use this result repeatedly in the problem.
 		\displaystyle p_s^\star(x_s|x_{s-1},y_{1:t}) = \mathbb P_{x_{s-1} x_s} f(y_s|x_s) \sum_{x_{s+1}\in X} p_{s+1}^\star(x_{s+1}|x_{s},y_{1:t})\quad \quad 2\leq s \leq t-1\\
 		\displaystyle p_1^\star(x_1|y_{1:t}) = p(x_1) f(y_1|x_1) \sum_{x_2\in X} p_2^\star(x_2|x_1,y_{1:t})
 	\end{cases}$$
-	We resort to dynamic programming again. For each $1\leq s\leq t-1$ and each $x_s\in \{1,\ldots,\kappa\}$, we must compute a sum of $\kappa$ terms, hence a global time complexity of $O(t\kappa^2)$.
+	We resort to dynamic programming again. We begin by computing and storing the $p_t^\star(x_t|x_{t-1},y_{1:t})$ for every combination of $(x_t,x_{t-1})$, which takes $O(\kappa^2)$ time and $O(\kappa^2)$ memory. Let $s\leq t-1$ be fixed. We assume that the $p_{s+1}^\star(x_{s+1}|x_{s},y_{1:t})$ have all been saved from the previous iteration, which has a memory cost of $O(\kappa^2)$. Let $x_s$ be fixed. We compute and store $\sum_{x_{s+1}\in X} p_{s+1}^\star(x_{s+1}|x_{s},y_{1:t})$, and then for each $x_{s-1}$ we compute $\mathbb P_{x_{s-1} x_s} f(y_s|x_s) \sum_{x_{s+1}\in X} p_{s+1}^\star(x_{s+1}|x_{s},y_{1:t})$, which yields the value of $p_s^\star(x_s|x_{s-1},y_{1:t})$ in $O(\kappa)$ time. Doing this for each $x_s$ yields $p_s^\star(x_s|x_{s-1},y_{1:t})$ for every combination of $(x_s,x_{s-1})$ in $O(\kappa^2)$ time. To complete this iteration, we erase all the $p_{s+1}^\star(x_{s+1}|x_{s},y_{1:t})$ from memory and we store instead all the $p_s^\star(x_s|x_{s-1},y_{1:t})$.
+	\newline
+	As a result, the global time complexity is $O(t\kappa^2)$ and the memory footprint is $O(\kappa^2)$.
 
 	\item It is straightforward to prove that $\displaystyle p(x_{1:t}|y_{1:t}) = p(x_1|y_{1:t}) \prod_{s=1}^t p(x_s|x_{s-1},y_{1:t})$.\newline 
 	Once the ${p_s}^\star$ have been computed, the normalized versions $p(x_s|x_{s-1},y_{1:t})$ can be retrieved without increasing the computational complexity. Given the factorization of the joint distribution, we can sample from it by sequentially generating $x_1$ from $p(x_1|y_{1:t})$, $x_2$ from $p(x_2|x_{1},y_{1:t})$ and so on. This process takes $O(t\kappa^2)$ in time.
@@ -278,6 +280,89 @@ We will use this result repeatedly in the problem.
 	
 	\item As stated in (c), computing the conditional likelihood $p(x_{1:T}|y_{1:T})$ has complexity $O(T\kappa^2)$ in time.
 \end{enumerate}
+
+\section*{Problem 14.7}
+\begin{enumerate}[label=(\alph*)]
+	\item The recursion for $\varphi_{t+1}(j)$ follows from computing the joint density of $(X_{t+1},Y_{1:t})$:
+	$$\begin{aligned}
+		p(x_{t+1},y_{1:t}) &= \int \int \prod_{j=1}^{t}\mathbb P_{x_{j} x_{j+1}} \prod_{j=1}^{t+1} f(y_j|x_j)p(x_1) d\lambda(y_{t+1})dN_X^{\otimes t}(x_{1:t})\\
+		&= \mathbin{\textcolor{blue}{\int \prod_{j=1}^{t}\mathbb P_{x_{j} x_{j+1}} \prod_{j=1}^{t} f(y_j|x_j)p(x_1) dN_X^{\otimes t}(x_{1:t})}} \\
+		&= \int \mathbb P_{x_{t} x_{t+1}} f(y_t|x_t) \mathbin{\textcolor{blue}{\int \prod_{j=1}^{t-1}\mathbb P_{x_{j} x_{j+1}} \prod_{j=1}^{t-1}f(y_j|x_j)p(x_1) dN_X^{\otimes t-1}(x_{1:t-1})}} dN_X(x_t)\\
+		&= \int \mathbb P_{x_{t} x_{t+1}} f(y_t|x_t) p(x_{t},y_{1:t-1})  dN_X(x_t)\\
+		&= p(y_{1:t-1}) \int \mathbb P_{x_{t} x_{t+1}} f(y_t|x_t) p(x_{t}|y_{1:t-1})  dN_X(x_t) \quad \quad (*)
+	\end{aligned}$$
+	$p(y_{1:t-1})$ vanishes when computing the conditional expectation: 
+	$$\begin{aligned} p(x_{t+1}|y_{1:t}) &= \frac{\int \mathbb P_{x_{t} x_{t+1}} f(y_t|x_t) p(x_{t}|y_{1:t-1})  dN_X(x_t)}{\int \int \mathbb P_{x_{t} x_{t+1}} f(y_t|x_t) p(x_{t}|y_{1:t-1})  dN_X(x_t) dN_X(x_{t+1})}\\
+	&= \frac{\int \mathbb P_{x_{t} x_{t+1}} f(y_t|x_t) p(x_{t}|y_{1:t-1})  dN_X(x_t)}{\int (\int \mathbb P_{x_{t} x_{t+1}} dN_X(x_{t+1})) f(y_t|x_t) p(x_{t}|y_{1:t-1})  dN_X(x_t) }\\
+	&= \frac{\int \mathbb P_{x_{t} x_{t+1}} f(y_t|x_t) p(x_{t}|y_{1:t-1})  dN_X(x_t)}{\int f(y_t|x_t) p(x_{t}|y_{1:t-1})  dN_X(x_t) }
+	\end{aligned}
+	$$
+	With the notations used in the problem this turns into
+	$$\varphi_{t+1}(x_{t+1}) = \frac{1}{c_t} \sum_{x_t\in X} \mathbb P_{x_{t} x_{t+1}} f(y_t|x_t) \varphi_{t}(x_{t})$$
+	Hence 
+	$$\varphi_{t+1}(j) = \frac{1}{c_t} \sum_{i=1}^\kappa \mathbb P_{ij} f(y_t|x_t=i) \varphi_{t}(i)$$
+	Setting $\varphi_{1}(j) = p(x_1=j)$ is just a convention that makes sense.
+
+	\item Integrating $(*)$ in (a) with respect to $x_{t+1}$ yields $\displaystyle p(y_{1:t}) = p(y_{1:t-1}) \int f(y_t|x_t) p(x_{t}|y_{1:t-1})  dN_X(x_t)$, hence 
+	$$p(y_t|y_{1:t-1}) = \int f(y_t|x_t) p(x_{t}|y_{1:t-1})  dN_X(x_t) = \sum_{x_t\in X} f(y_t|x_t) p(x_{t}|y_{1:t-1})$$
+	Besides, trivial telescoping gives $\displaystyle p(y_{1:t}) = p(y_1)\prod_{s=2}^t p(y_s|y_{1:s-1})$, thus 
+	$$\begin{aligned}
+	p(y_{1:t}) &= p(y_1) \prod_{s=2}^t \sum_{x_s\in X} f(y_s|x_s) p(x_{s}|y_{1:s-1}) \\
+	&= \sum_{x_1\in X} f(y_1|x_1)p(x_1) \prod_{s=2}^t \sum_{x_s\in X} f(y_s|x_s) \varphi_{s}(x_s)\\
+	&= \prod_{s=1}^t \sum_{x_s\in X} f(y_s|x_s) \varphi_{s}(x_s)
+	\end{aligned}$$
+
+	\item We proved earlier that $p(y_{1:t}) = \sum_{x_1\in X} p_1^\star(x_1|y_{1:t})$. Remember from question (b) in Problem 14.6 that computing the $p_s^\star$ has complexity $O(t\kappa^2)$ in time and $O(\kappa^2)$ in memory.\newline
+	\newline
+	From the previous question we have $\displaystyle p(y_{1:t}) = \prod_{s=1}^t \sum_{x_s\in X} f(y_s|x_s) \varphi_{s}(x_s)$, which requires knowledge of the $\varphi_{s}$. These can be computed via dynamic programming: we begin by computing and storing all the $\varphi_1(x_1)$ which takes $O(\kappa)$ time and $O(\kappa)$ memory. Additionally we compute and store $\sum_{x_1\in X} f(y_1|x_1) \varphi_{1}(x_1)$.  Let $s\geq 2$ be fixed. We assume that all the $\varphi_{s-1}(x_{s-1})$ have been saved from the previous iteration and that $\prod_{r=1}^{s-1} \sum_{x_r\in X} f(y_r|x_r) \varphi_{r}(x_r)$ has also been saved, all of which has a memory cost of $O(\kappa)$. Using the forward equation, we compute all the $\varphi_{s}(x_{s})$ in $O(\kappa^2)$ time, from which we get $\sum_{x_s\in X} f(y_s|x_s) \varphi_{s}(x_s)$ in $O(\kappa)$ time and then $\prod_{r=1}^{s} \sum_{x_r\in X} f(y_r|x_r) \varphi_{r}(x_r)$ in $O(1)$. To complete this iteration, we erase the $\varphi_{s-1}(x_{s-1})$ from memory and store the $\varphi_{s}(x_{s})$instead.\newline\newline 
+	As a result, computing $p(y_{1:t})$ takes $O(t\kappa^2)$ time and $O(\kappa)$ memory. Compared to the other method, this one has similar time complexity but demands less memory ($O(\kappa)$ versus $O(\kappa^2)$).
+
+	\item Note that
+	$$\begin{aligned}
+		\nabla_\theta \log p(y_{1:t}) &= \nabla_\theta\left[\sum_{s=1}^t \log \left(\sum_{x_s\in X} f(y_s|x_s) \varphi_{s}(x_s)\right)  \right]\\
+		&= \sum_{s=1}^t \nabla_\theta \log \left(\sum_{x_s\in X} f(y_s|x_s) \varphi_{s}(x_s)\right)\\
+		&= \sum_{s=1}^t \frac{\sum_{x_s\in X} f(y_s|x_s) \nabla_\theta(\varphi_{s}(x_s)) +  \varphi_{s}(x_s)\nabla_\theta (f(y_s|x_s)) }{\sum_{x_s\in X} f(y_s|x_s) \varphi_{s}(x_s)}\\
+		&= \sum_{s=1}^t \frac{1}{c_s} \sum_{x_s\in X} f(y_s|x_s) \nabla_\theta(\varphi_{s}(x_s)) +  \varphi_{s}(x_s)\nabla_\theta (f(y_s|x_s)) 
+	\end{aligned}$$
+	Using the forward equation,
+	$$\begin{aligned}
+		\nabla_\theta \varphi_{t+1}(x_{t+1}) &= \nabla_\theta\left[\frac{1}{\sum_{x_t\in X} f(y_t|x_t) \varphi_{t}(x_{t})} \sum_{x_t\in X} \mathbb P_{x_{t} x_{t+1}} f(y_t|x_t) \varphi_{t}(x_{t}) \right]\\
+		&= \begin{aligned}[t]
+			&-\frac{1}{c_t^2} \sum_{x_t\in X} \left[ f(y_t|x_t) \nabla_\theta \varphi_{t}(x_{t}) + \varphi_{t}(x_{t}) \nabla_\theta f(y_t|x_t) \right] \sum_{x_t\in X} \mathbb P_{x_{t} x_{t+1}} f(y_t|x_t) \varphi_{t}(x_{t})\\
+			&+ \frac{1}{c_t} \sum_{x_t\in X} \mathbb P_{x_{t} x_{t+1}}\left[ f(y_t|x_t) \nabla_\theta \varphi_{t}(x_{t}) + \varphi_{t}(x_{t}) \nabla_\theta f(y_t|x_t)\right]
+		\end{aligned}\\
+		&= \begin{aligned}[t]
+			&-\frac{1}{c_t} \sum_{x_t\in X} \left[ f(y_t|x_t) \nabla_\theta \varphi_{t}(x_{t}) + \varphi_{t}(x_{t}) \nabla_\theta f(y_t|x_t) \right] \varphi_{t+1}(x_{t+1}) \\
+			&+ \frac{1}{c_t} \sum_{x_t\in X} \mathbb P_{x_{t} x_{t+1}}\left[ f(y_t|x_t) \nabla_\theta \varphi_{t}(x_{t}) + \varphi_{t}(x_{t}) \nabla_\theta f(y_t|x_t)\right]
+		\end{aligned}\\
+		&= \frac{1}{c_t} \sum_{x_t\in X} (\mathbb P_{x_{t} x_{t+1}} - \varphi_{t+1}(x_{t+1})) \left[ f(y_t|x_t) \nabla_\theta \varphi_{t}(x_{t}) + \varphi_{t}(x_{t}) \nabla_\theta f(y_t|x_t) \right]
+	\end{aligned}$$
+
+	\item Note that 
+	$$\begin{aligned}
+		\nabla_\eta \log p(y_{1:t}) &= \nabla_\eta\left[\sum_{s=1}^t \log \left(\sum_{x_s\in X} f(y_s|x_s) \varphi_{s}(x_s)\right)  \right]\\
+		&= \sum_{s=1}^t \nabla_\eta \log \left(\sum_{x_s\in X} f(y_s|x_s) \varphi_{s}(x_s)\right)\\
+		&= \sum_{s=1}^t \frac{1}{c_s} \sum_{x_s\in X} f(y_s|x_s) \nabla_\eta(\varphi_{s}(x_s))  
+	\end{aligned}$$
+Using the forward equation,
+	$$\begin{aligned}
+		\nabla_\eta \varphi_{t+1}(x_{t+1}) &= \nabla_\eta\left[\frac{1}{\sum_{x_t\in X} f(y_t|x_t) \varphi_{t}(x_{t})} \sum_{x_t\in X} \mathbb P_{x_{t} x_{t+1}} f(y_t|x_t) \varphi_{t}(x_{t}) \right]\\
+		&= \begin{aligned}[t]
+			&-\frac{1}{c_t^2} \sum_{x_t\in X} \left[ f(y_t|x_t) \nabla_\eta \varphi_{t}(x_{t}) \right] \sum_{x_t\in X} \mathbb P_{x_{t} x_{t+1}} f(y_t|x_t) \varphi_{t}(x_{t})\\
+			&+ \frac{1}{c_t} \sum_{x_t\in X} f(y_t|x_t)\left[ \mathbb P_{x_{t} x_{t+1}} \nabla_\eta \varphi_{t}(x_{t}) + \varphi_{t}(x_{t}) \nabla_\eta \mathbb P_{x_{t} x_{t+1}}\right]
+		\end{aligned}\\
+		&= \begin{aligned}[t]
+			&-\frac{1}{c_t} \sum_{x_t\in X} \left[ f(y_t|x_t) \nabla_\eta \varphi_{t}(x_{t}) \right] \varphi_{t+1}(x_{t+1})\\
+			&+ \frac{1}{c_t} \sum_{x_t\in X} f(y_t|x_t)\left[ \mathbb P_{x_{t} x_{t+1}} \nabla_\eta \varphi_{t}(x_{t}) + \varphi_{t}(x_{t}) \nabla_\eta \mathbb P_{x_{t} x_{t+1}}\right]
+		\end{aligned}\\
+		&= \frac{1}{c_t} \sum_{x_t\in X} f(y_t|x_t) \left[ \nabla_\eta \varphi_{t}(x_{t}) (\mathbb P_{x_{t} x_{t+1}} - \varphi_{t+1}(x_{t+1})) + \varphi_{t}(x_{t}) \nabla_\eta \mathbb P_{x_{t} x_{t+1}} \right]
+	\end{aligned}$$
+
+	\item To compute $\nabla_\theta \log p(y_{1:t})$ we first compute and save all the $\varphi_{s}(x_{s})$, which takes $O(t\kappa^2)$ in time and $O(\kappa)$ in memory. Next we compute the $\nabla_\theta(\varphi_{s}(x_s))$ via dynamic programming. For a fixed $s$, once all the $\nabla_\theta(\varphi_{s-1}(x_{s-1}))$ are computed, evaluating $\nabla_\theta(\varphi_{s}(x_s))$ for each $x_s$ with the forward equation takes $O(\kappa)$, so the summand $\frac{1}{c_s} \sum_{x_s\in X} f(y_s|x_s) \nabla_\theta(\varphi_{s}(x_s)) +  \varphi_{s}(x_s)\nabla_\theta (f(y_s|x_s))$ is computed in $O(\kappa^2)$ time.\newline \newline Therefore, the global time complexity to compute $\nabla_\theta \log p(y_{1:t})$ is $O(t\kappa^2+t\kappa^2) = O(t\kappa^2)$. Similarly, computing $\nabla_\eta \log p(y_{1:t})$ takes $O(t\kappa^2)$ in time.
+
+	\item Let $n$ be the dimension of $\theta$ and $m$ be that of $\eta$. To fulfill the next iteration in the computation of $\nabla_\theta(\varphi_{s}(x_s))$, one must save in memory the results of the previous iteration, that is to say $\nabla_\theta(\varphi_{s-1}(x_{s-1}))$ for each $x_{s-1}$. This costs $O(\kappa n)$. Therefore, computing $\nabla_\theta \log p(y_{1:t})$ and $\nabla_\eta \log p(y_{1:t})$ takes $O(\kappa (n+m)) = O(\kappa p)$ in memory.
+ \end{enumerate}
+
 
 \newpage
 \bibliographystyle{unsrt}
